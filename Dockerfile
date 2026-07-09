@@ -2,7 +2,6 @@ FROM richarvey/nginx-php-fpm:latest
 
 COPY . .
 
-# Variables d'environnement
 ENV SKIP_COMPOSER 1
 ENV WEBROOT /var/www/html/public
 ENV PHP_ERRORS_STDERR 1
@@ -14,20 +13,24 @@ ENV APP_DEBUG false
 ENV LOG_CHANNEL stderr
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
-# Installer SQLite système (nécessaire pour pdo_sqlite)
+# Installer SQLite système
 RUN apk add --no-cache sqlite sqlite-dev
 
-# Installer l'extension PHP pdo_sqlite
+# Installer pdo_sqlite
 RUN docker-php-ext-install pdo_sqlite
 
-# Installer les dépendances Composer
+# Installer Composer
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Créer le fichier SQLite
 RUN touch /var/www/html/database/database.sqlite && chmod 666 /var/www/html/database/database.sqlite
 
-# Permissions pour storage et cache
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Créer les dossiers de storage (importants pour sessions, cache, logs)
+RUN mkdir -p /var/www/html/storage/framework/sessions \
+    && mkdir -p /var/www/html/storage/framework/views \
+    && mkdir -p /var/www/html/storage/framework/cache \
+    && mkdir -p /var/www/html/bootstrap/cache \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 CMD ["/start.sh"]
