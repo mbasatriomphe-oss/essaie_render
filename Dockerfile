@@ -3,7 +3,7 @@ FROM richarvey/nginx-php-fpm:latest
 COPY . .
 
 # Variables d'environnement
-ENV SKIP_COMPOSER 1   # On désactive le composer automatique pour le faire nous-mêmes
+ENV SKIP_COMPOSER 1
 ENV WEBROOT /var/www/html/public
 ENV PHP_ERRORS_STDERR 1
 ENV RUN_SCRIPTS 1
@@ -14,7 +14,10 @@ ENV APP_DEBUG false
 ENV LOG_CHANNEL stderr
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
-# Installer l'extension SQLite (au cas où)
+# Installer SQLite système (nécessaire pour pdo_sqlite)
+RUN apk add --no-cache sqlite sqlite-dev
+
+# Installer l'extension PHP pdo_sqlite
 RUN docker-php-ext-install pdo_sqlite
 
 # Installer les dépendances Composer
